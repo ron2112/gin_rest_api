@@ -8,6 +8,8 @@ import (
 	"github.com/ron2112/gin_rest_api/internal/database"
 )
 
+// migrate create -ext sql -dir migrations -seg create_todos_table
+
 func main() {
 	cfg, err := config.Load()
 	if err != nil {
