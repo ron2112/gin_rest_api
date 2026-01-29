@@ -33,6 +33,7 @@ func main() {
 		})
 	})
 
+	// todo routes
 	router.POST("/todos", handlers.CreateTodoHandler(pool))
 
 	router.GET("/todos", handlers.GetAllTodosHandler(pool))
@@ -42,6 +43,14 @@ func main() {
 	router.PUT("/todos/:id", handlers.UpdateTodoHandler(pool))
 
 	router.DELETE("/todos/:id", handlers.DeleteTodoHandler(pool))
+
+	// user routes
+	router.POST("/users", handlers.CreateUserHandler(pool))
+
+	router.GET("/users/email/:email", handlers.GetUserByEmailHandler(pool))
+
+	router.GET("/users/id/:id", handlers.GetUserByIdHandler(pool))
+
 
 	router.Run(":" + cfg.Port)
 }
