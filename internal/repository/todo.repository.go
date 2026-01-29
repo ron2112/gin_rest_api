@@ -95,3 +95,52 @@ func GetTodo(pool *pgxpool.Pool, id int) (*models.Todo, error) {
 
 	return &todo, nil
 }
+
+func UpdateTodo(pool *pgxpool.Pool, id int, title string, completed bool) (*models.Todo, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	query := `
+		UPDATE todos
+		SET title = $2, completed = $3, updated_at = CURRENT_TIMESTAMP
+		where id = $1
+		RETURNING id, title, completed, created_at, updated_at
+	`
+
+	var todo models.Todo
+	err := pool.QueryRow(ctx, query, id, title, completed).Scan(
+		&todo.Id,
+		&todo.Title,
+		&todo.Completed,
+		&todo.CreatedAt,
+		&todo.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &todo, nil
+}
+
+func DeleteTodo(pool *pgxpool.Pool, id int) (*models.Todo, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	query := `
+		DELETE FROM todos WHERE id = $1 RETURNING id, title, completed, created_at, updated_at
+	`
+
+	var todo models.Todo
+	err := pool.QueryRow(ctx, query, id).Scan(
+		&todo.Id,
+		&todo.Title,
+		&todo.Completed,
+		&todo.CreatedAt,
+		&todo.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &todo, nil
+}
