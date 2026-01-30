@@ -7,6 +7,7 @@ import (
 	"github.com/ron2112/gin_rest_api/internal/config"
 	"github.com/ron2112/gin_rest_api/internal/database"
 	"github.com/ron2112/gin_rest_api/internal/handlers"
+	"github.com/ron2112/gin_rest_api/internal/middleware"
 )
 
 // migrate create -ext sql -dir migrations -seg create_todos_table
@@ -50,6 +51,11 @@ func main() {
 	router.GET("/users/email/:email", handlers.GetUserByEmailHandler(pool))
 
 	router.GET("/users/id/:id", handlers.GetUserByIdHandler(pool))
+
+	router.POST("/users/login", handlers.LoginHandler(pool, cfg))
+
+	// Authorization Middleware test route
+	router.GET("/auth/test", middleware.AuthMiddleWare(cfg), handlers.TestProtectedHandler())
 
 
 	router.Run(":" + cfg.Port)
