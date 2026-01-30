@@ -28,35 +28,41 @@ func main() {
 	router.SetTrustedProxies(nil)
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": "Todo api is running",
-			"status": "success",
+			"message":  "Todo api is running",
+			"status":   "success",
 			"database": "connected",
 		})
 	})
 
-	// todo routes
-	router.POST("/todos", handlers.CreateTodoHandler(pool))
+	// Auth routes
+	router.POST("/auth/register", handlers.CreateUserHandler(pool))
 
-	router.GET("/todos", handlers.GetAllTodosHandler(pool))
-
-	router.GET("/todos/:id", handlers.GetTodoHAndler(pool))
-
-	router.PUT("/todos/:id", handlers.UpdateTodoHandler(pool))
-
-	router.DELETE("/todos/:id", handlers.DeleteTodoHandler(pool))
+	router.POST("/auth/login", handlers.LoginHandler(pool, cfg))
 
 	// user routes
-	router.POST("/users", handlers.CreateUserHandler(pool))
-
 	router.GET("/users/email/:email", handlers.GetUserByEmailHandler(pool))
 
 	router.GET("/users/id/:id", handlers.GetUserByIdHandler(pool))
 
-	router.POST("/users/login", handlers.LoginHandler(pool, cfg))
+	protected := router.Group("/todos")
+	protected.Use(middleware.AuthMiddleWare(cfg))
+
+	// todo routes
+
+	{
+		protected.POST("", handlers.CreateTodoHandler(pool))
+
+		protected.GET("", handlers.GetAllTodosHandler(pool))
+
+		protected.GET("/:id", handlers.GetTodoHAndler(pool))
+
+		protected.PUT("/:id", handlers.UpdateTodoHandler(pool))
+
+		protected.DELETE("/:id", handlers.DeleteTodoHandler(pool))
+	}
 
 	// Authorization Middleware test route
 	router.GET("/auth/test", middleware.AuthMiddleWare(cfg), handlers.TestProtectedHandler())
-
 
 	router.Run(":" + cfg.Port)
 }
